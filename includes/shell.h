@@ -6,7 +6,7 @@
 /*   By: lumenthi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/08 11:22:09 by lumenthi          #+#    #+#             */
-/*   Updated: 2018/08/25 11:09:29 by lumenthi         ###   ########.fr       */
+/*   Updated: 2018/09/01 13:40:04 by lumenthi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,9 +21,6 @@
 # define YELLOW "\033[38;5;227m"
 # define PURPLE "\033[38;5;63m"
 # define GREEN2 "\033[38;5;47m"
-
-# define HISTSIZE 5
-# define HISTFILE "/tmp/.42sh_history"
 
 # define RIGHT (buf[0] == 27 && buf[1] == 79 && buf[2] == 67)
 # define LEFT (buf[0] == 27 && buf[1] == 79 && buf[2] == 68)
@@ -73,6 +70,11 @@ typedef struct	s_inputs
 }				t_inputs;
 
 //******************** HISTORY_PART ***************************
+
+# define HISTSIZE 500
+	//size of the history (number of commands that are recorded)
+# define HISTFILE "/tmp/.42sh_history"
+	//file that contains commands of the history
 
 typedef struct	s_history
 {

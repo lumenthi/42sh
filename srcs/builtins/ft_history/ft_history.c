@@ -6,7 +6,7 @@
 /*   By: lumenthi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/05/08 16:00:59 by lumenthi          #+#    #+#             */
-/*   Updated: 2018/08/25 10:41:13 by lumenthi         ###   ########.fr       */
+/*   Updated: 2018/09/01 13:32:19 by lumenthi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,19 +22,33 @@ static int	history_clear(void)
 	return (1);
 }
 
-static int	history_usage(char *str)
+static int	history_usage(char c)
 {
 	ft_putstr_fd(RED, 2);
 	ft_putstr_fd("history", 2);
 	ft_putstr_fd(BLANK, 2);
 	ft_putstr_fd(": illegal option ", 2);
 	ft_putstr_fd(RED, 2);
-	ft_putstr_fd(str, 2);
+	ft_putchar_fd(c, 2);
 	ft_putstr_fd(BLANK, 2);
 	ft_putchar_fd('\n', 2);
 	ft_putendl_fd("usage: history [-c] [-d offset] [n] or ", 2);
 	ft_putendl_fd("history -awrn [filename] or history -ps arg [arg...]", 2);
 	return (1);
+}
+
+static int	strchr_index(char *str, char *index)
+{
+	int i;
+
+	i = 0;
+	while (str[i])
+	{
+		if (ft_strchr_index(index, str[i]) == -1)
+			return (str[i]);
+		i++;
+	}
+	return (0);
 }
 
 int		print_history(void)
@@ -90,11 +104,37 @@ static int		del_error(int elem)
 	return (1);
 }
 
-int			history_d(int elem)
+static int		del_error_alpha(char elem)
+{
+	ft_putstr_fd(RED, 2);
+	ft_putstr_fd("history: ", 2);
+	ft_putstr_fd(BLANK, 2);
+	ft_putchar_fd(elem, 2);
+	ft_putstr_fd(": position out of range\n", 2);
+	return (1);
+}
+
+static int		requires_error(void)
+{
+	ft_putstr_fd(RED, 2);
+	ft_putstr_fd("history: ", 2);
+	ft_putstr_fd(BLANK, 2);
+	ft_putendl_fd("-d: option requires an argument", 2);
+	return (1);
+}
+
+int			history_d(char **args, int start)
 {
 	int	i;
 	int	new;
+	int	elem;
 
+	if (!(args[start]))
+		return (requires_error());
+	if ((i = strchr_index(args[start], "0123456789")) ||
+		ft_strcmp(args[start], "") == 0)
+		return (del_error_alpha(i));
+	elem = ft_atoi(args[start]);
 	i = 0;
 	new = (elem - g_history->index) - 1;
 	if (g_history->nb_lines == g_history->SIZE && new == -1)
@@ -143,7 +183,10 @@ int		history_w(char *file)
 
 	ret = 0;
 	if (file == NULL || ft_strcmp(file, "") == 0)
+	{
 		ret = g_history->history_writeT(HISTFILE, g_history->line);
+		g_history->start = g_history->nb_lines;
+	}
 	else
 		ret = g_history->history_writeT(file, g_history->line);
 	return (ret = 1 ? 0 : 1);
@@ -210,28 +253,170 @@ int			history_n(char *file)
 	return (0);
 }
 
+static char	*str_arg(char **args, int *start)
+{
+	char	*str;
+	char	*tmp;
+	int		i;
+
+	str = ft_strdup("");
+	while (args[*start] && args[*start][0] == '-')
+	{
+		i = 1;
+		while (args[*start][i])
+		{
+			tmp = ft_strdup(str);
+			free(str);
+			str = ft_charjoin(tmp, args[*start][i]);
+			free(tmp);
+			i++;
+		}
+		(*start)++;
+	}
+	return (str);
+}
+
+static int	multiple_afile(void)
+{
+	ft_putstr_fd(RED, 2);
+	ft_putstr_fd("history", 2);
+	ft_putstr_fd(BLANK, 2);
+	ft_putendl_fd(": cannot use more than one of -anrw", 2);
+	return (1);
+}
+
+static int	args_error(char *str)
+{
+	int		i;
+	int		count;
+	char	c;
+
+	i = 0;
+	count = 0;
+	if (((c = strchr_index(str, "cdanrwps")) > 0) && history_usage(c))
+		return (1);
+	if (strchr_index(str, "cdps") == 0)
+		return (0);
+	while (str[i])
+	{
+		if (ft_strchr_index("anrw", str[i]) != -1)
+			count++;
+		i++;
+	}
+	if (count > 1)
+		return (multiple_afile());
+	return (0);
+}
+
+static int	spe_free(char **str)
+{
+	free(*str);
+	return (1);
+}
+
+static char	ret_char(char **str)
+{
+	if (ft_strchr(*str, 'c') && spe_free(str))
+		return ('c');
+	else if (ft_strchr(*str, 'd') && spe_free(str))
+		return ('d');
+	else if (ft_strchr(*str, 's') && spe_free(str))
+		return ('s');
+	else if (ft_strchr(*str, 'p') && spe_free(str))
+		return ('p');
+	else if (ft_strchr(*str, 'a')  && spe_free(str))
+		return ('a');
+	else if (ft_strchr(*str, 'n')  && spe_free(str))
+		return ('n');
+	else if (ft_strchr(*str, 'r')  && spe_free(str))
+		return ('r');
+	else if (ft_strchr(*str, 'w')  && spe_free(str))
+		return ('w');
+	return ('0');
+}
+
+static char	get_arg(char **args, int *start)
+{
+	char *str;
+
+	if (tab_size(args) == 1)
+		return ('0');
+	str = str_arg(args, start);
+	if (*start == 1 && spe_free(&str))
+		return ('0');
+	if (!args_error(str))
+		return (ret_char(&str));
+	else if (spe_free(&str))
+		return ('e');
+	free(str);
+	return ('0');
+}
+
+static int	history_too_much(void)
+{
+	ft_putstr_fd(RED, 2);
+	ft_putstr_fd("history", 2);
+	ft_putstr_fd(BLANK, 2);
+	ft_putendl_fd(": too many arguments", 2);
+	return (1);
+}
+
+static int	history_numeric(void)
+{
+	ft_putstr_fd(RED, 2);
+	ft_putstr_fd("history", 2);
+	ft_putstr_fd(BLANK, 2);
+	ft_putendl_fd(": numeric argument required", 2);
+	return (1);
+}
+
+static int	history_base(char **args, int start)
+{
+	int		i;
+
+	i = 0;
+	if (args[start] == NULL)
+		return (print_history());
+	else
+	{
+		while (args[start + i])
+		{
+			if (strchr_index(args[start + i], "0123456789") ||
+				ft_strcmp(args[start + i], "") == 0)
+				return (history_numeric());
+			i++;
+		}
+		if (i > 1)
+			return (history_too_much());
+		return (print_nhistory(ft_atoi(args[start])));
+	}
+}
+
 int			ft_history(char **args)
 {
-	if (tab_size(args) == 1)
-		return (print_history());
-	else if (ft_isnum(args[1]))
-		return (print_nhistory(ft_atoi(args[1])));
-	else if (ft_strcmp(args[1], "-c") == 0)
+	int		start;
+	char	arg;
+
+	start = 1;
+	arg = get_arg(args, &start);
+	if (arg == '0')
+		return (history_base(args, start));
+	else if (arg == 'c')
 		return (history_clear());
-	else if (ft_strcmp(args[1], "-r") == 0)
-		return (history_r(args[2]));
-	else if (ft_strcmp(args[1], "-a") == 0)
-		return (history_a(args[2]));
-	else if (ft_strcmp(args[1], "-n") == 0)
-		return (history_n(args[2]));
-	else if (ft_strcmp(args[1], "-w") == 0)
-		return (history_w(args[2]));
-	else if (ft_strcmp(args[1], "-p") == 0)
+	else if (arg == 'r')
+		return (history_r(args[start]));
+	else if (arg == 'a')
+		return (history_a(args[start]));
+	else if (arg == 'n')
+		return (history_n(args[start]));
+	else if (arg == 'w')
+		return (history_w(args[start]));
+	else if (arg == 'p')
 		return (history_p(args));
-	else if (ft_strcmp(args[1], "-s") == 0)
+	else if (arg == 's')
 		return (history_s(args));
-	else if (ft_strcmp(args[1], "-d") == 0)
-		return (history_d(ft_atoi(args[2])));
+	else if (arg == 'd')
+		return (history_d(args, start));
 	else
-		return (history_usage(args[1]));
+		return (1);
 }
