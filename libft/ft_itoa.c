@@ -3,59 +3,72 @@
 /*                                                        :::      ::::::::   */
 /*   ft_itoa.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lumenthi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: acauchy <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2017/11/14 12:26:03 by lumenthi          #+#    #+#             */
-/*   Updated: 2017/11/24 10:28:02 by lumenthi         ###   ########.fr       */
+/*   Created: 2017/11/17 10:23:17 by acauchy           #+#    #+#             */
+/*   Updated: 2017/11/17 11:50:38 by acauchy          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
 #include <stdlib.h>
+#include "libft.h"
 
-static int		ft_length(int n)
+static int	compute_nb_len(int n)
 {
-	int count;
+	long	nb;
+	size_t	i;
 
-	count = 0;
-	if (n < 0)
+	nb = n;
+	i = 0;
+	while (nb != 0)
 	{
-		n = n * -1;
-		count++;
+		nb = nb / 10;
+		++i;
 	}
-	if (n == 0)
-		count = 1;
-	while (n > 0)
-	{
-		n = n / 10;
-		count++;
-	}
-	return (count);
+	return (i);
 }
 
-char			*ft_itoa(int n)
+static void	write_str(int n, size_t len, char neg, char *str)
 {
-	int		length;
-	char	*str;
+	long	nb;
+	size_t	i;
 
-	if (n == -2147483648)
-		return (ft_strdup("-2147483648"));
-	length = ft_length(n) + 1;
-	if (!(str = (char*)malloc(sizeof(char) * (length))))
-		return (NULL);
-	if (n == 0)
-		str[0] = '0';
-	if (n < 0)
+	nb = n;
+	i = len - 1 + neg;
+	if (neg)
 	{
+		nb *= -1;
 		str[0] = '-';
-		n = n * -1;
 	}
-	str[length - 1] = '\0';
-	while (n > 0)
+	while (nb != 0)
 	{
-		length--;
-		str[length - 1] = (n % 10) + '0';
-		n = n / 10;
+		str[i] = '0' + (nb % 10);
+		nb = nb / 10;
+		--i;
 	}
+}
+
+/*
+** nb_len + neg permet d'avoir la longeur de la chaine.
+** En effet nb_len = taille du nombre, neg = 0 ou 1,
+** et donc aussi la taille necessaire pour un '-'.
+*/
+
+char		*ft_itoa(int n)
+{
+	char			*str;
+	size_t			nb_len;
+	char			neg;
+
+	if (n == 0)
+		return (ft_strdup("0"));
+	nb_len = compute_nb_len(n);
+	neg = 0;
+	if (n < 0)
+		neg = 1;
+	if (!(str = malloc(nb_len + neg + 1)))
+		return (NULL);
+	str[nb_len + neg] = '\0';
+	write_str(n, nb_len, neg, str);
 	return (str);
 }

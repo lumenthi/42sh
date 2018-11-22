@@ -1,0 +1,33 @@
+Fix :
+- autocomp+ ctrl+l leak
+- remove stdio includes
+- segfault when PATH is null
+- double free hiding somewhere in the jungle (when env -i)
+
+key combinations
+1. move_left_word		CONTROL_SHIFT_ARROW_LEFT
+1. move_right_word		CONTROL_SHIFT_ARROW_RIGHT
+3. copy all				OPTION_CHIFT_A;
+3. copy begin			OPTION_CHIFT_B;
+3. copy end				OPTION_CHIFT_E;
+3. cut all				OPTION_A;
+3. cut begin			OPTION_B;
+3. cut end				OPTION_E;
+3. paste				CONTROL_P;
+3. go up 1 line			OPTION_AWRROW_UP;
+3. go down 1 line		OPTION_AWRROW_DOWN;
+(too lazy to change the number .... :))
+
+FEATURES:
+-		""" (double quote), "’" (simple quote) et "\" (backslash).
+-		heredoc "<<"
+-		builtins history and "!"
+-		Line edition
+-		Autocompletion
+
+BONUSES:
+-		which
+-		help
+-		&&, ||, | inibitor?
+-		line edition colors
+-		alias

@@ -3,102 +3,93 @@
 /*                                                        :::      ::::::::   */
 /*   ft_strsplit.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lumenthi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: acauchy <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2017/11/16 09:36:32 by lumenthi          #+#    #+#             */
-/*   Updated: 2017/11/22 12:44:21 by lumenthi         ###   ########.fr       */
+/*   Created: 2017/11/15 14:28:19 by acauchy           #+#    #+#             */
+/*   Updated: 2017/11/20 14:39:36 by acauchy          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
 #include <stdlib.h>
+#include "libft.h"
 
-static int		ft_nb_words(char *str, char c)
+/*
+** Return how many valid words we have (valid if at least 1 char).
+*/
+
+static int	count_words(char const *s, char c)
 {
-	int i;
-	int count;
+	int		count;
+	int		in_word;
 
-	i = 0;
 	count = 0;
-	while (str[i])
+	in_word = 0;
+	while (*s)
 	{
-		if (str[i] != c)
+		if (in_word == 0 && *s != c)
+			in_word = 1;
+		if (in_word == 1 && *s == c)
 		{
-			while (str[i] != c && str[i])
-				i++;
-			count++;
+			in_word = 0;
+			++count;
 		}
-		else
-			i++;
+		++s;
 	}
+	if (in_word == 1)
+		++count;
 	return (count);
 }
 
-static char		*next_word(char *str, char c)
+static int	copy_word(char **row, char const *cur, char *chunk_start)
 {
-	while (*str == c && *str)
-		str++;
-	if (*str != c)
-	{
-		while (*str != c && *str)
-			str++;
-		while (*str == c && *str)
-			str++;
-	}
-	return (str);
+	if (!(*row = (char*)malloc(cur - chunk_start + 1)))
+		return (0);
+	ft_memcpy(*row, chunk_start, cur - chunk_start);
+	(*row)[cur - chunk_start] = '\0';
+	return (1);
 }
 
-static int		len_word(char *str, char c)
+static int	fill_tab(char **tab, char const *s, char c)
 {
-	int i;
+	char	*chunk_start;
+	int		in_word;
+	size_t	i;
 
+	in_word = 0;
 	i = 0;
-	while (str[i] && str[i] != c)
-		i++;
+	chunk_start = (char*)s;
+	while (1)
+	{
+		if (in_word == 0 && *s != c)
+		{
+			in_word = 1;
+			chunk_start = (char*)s;
+		}
+		if (in_word == 1 && (*s == c || *s == '\0'))
+		{
+			in_word = 0;
+			if (copy_word(&tab[i++], s, chunk_start) == 0)
+				return (0);
+		}
+		if (*s == '\0')
+			break ;
+		++s;
+	}
 	return (i);
 }
 
-static char		*ft_fill(char *s, int len)
-{
-	char	*str;
-	int		i;
-
-	str = (char*)malloc(sizeof(*str) * (len + 1));
-	if (str == NULL)
-		return (NULL);
-	i = 0;
-	while (i < len)
-	{
-		str[i] = s[i];
-		i++;
-	}
-	str[i] = '\0';
-	return (str);
-}
-
-char			**ft_strsplit(char const *s, char c)
+char		**ft_strsplit(char const *s, char c)
 {
 	char	**tab;
-	int		i;
-	int		nb_words;
-	char	*str;
+	int		words_count;
 
-	if (s == NULL)
+	if (!s)
 		return (NULL);
-	str = (char*)s;
-	i = 0;
-	nb_words = ft_nb_words(str, c);
-	tab = (char**)malloc(sizeof(tab) * nb_words + 1);
-	if (tab == NULL)
+	words_count = count_words(s, c);
+	if (!(tab = (char**)malloc((words_count + 1) * sizeof(char*))))
 		return (NULL);
-	while (*str == c && *str)
-		str++;
-	while (i < nb_words)
-	{
-		tab[i] = ft_fill(str, len_word(str, c));
-		str = next_word(str, c);
-		i++;
-	}
-	tab[i] = NULL;
+	if (words_count > 0 && fill_tab(tab, s, c) == 0)
+		return (NULL);
+	tab[words_count] = 0;
 	return (tab);
 }

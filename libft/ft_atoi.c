@@ -3,39 +3,40 @@
 /*                                                        :::      ::::::::   */
 /*   ft_atoi.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lumenthi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: acauchy <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2017/11/14 13:20:06 by lumenthi          #+#    #+#             */
-/*   Updated: 2017/11/17 10:57:34 by lumenthi         ###   ########.fr       */
+/*   Created: 2017/11/14 10:49:24 by acauchy           #+#    #+#             */
+/*   Updated: 2017/11/22 10:12:56 by acauchy          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
+/*
+** neg is a boolean, represented by a char so it takes less space in memory
+*/
+
 int	ft_atoi(const char *str)
 {
-	int i;
-	int sign;
-	int nb;
+	int					i;
+	char				neg;
+	unsigned long long	nbr;
 
 	i = 0;
-	nb = 0;
-	sign = 1;
-	while (str[i] == '\n' || str[i] == '\f' || str[i] == '\v' ||
-		str[i] == '\r' || str[i] == '\t' || str[i] == ' ')
-		i++;
-	if (str[i] == '-')
-		sign = -1;
-	if (str[i] == '+' || str[i] == '-')
+	neg = 0;
+	nbr = 0;
+	while (str[i] != '\0' && ft_isspace(str[i]))
+		++i;
+	if (str[i] != '\0' && (str[i] == '-' || str[i] == '+'))
+		if (str[i++] == '-')
+			neg = 1;
+	while (str[i] != '\0' && ft_isdigit(str[i]))
 	{
-		if (str[i + 1] < '0' || str[i + 1] > '9')
-			return (0);
-		i++;
+		nbr *= 10;
+		nbr += str[i++] - 48;
 	}
-	while (str[i] >= '0' && str[i] <= '9')
-	{
-		nb = nb * 10 + (str[i] - '0');
-		i++;
-	}
-	return (nb * sign);
+	if ((neg == 1 && nbr > 9223372036854775808UL)
+			|| (neg == 0 && nbr > 9223372036854775807UL))
+		return (neg == 1 ? 0 : -1);
+	return (neg == 1 ? nbr * -1 : nbr);
 }

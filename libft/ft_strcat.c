@@ -3,32 +3,20 @@
 /*                                                        :::      ::::::::   */
 /*   ft_strcat.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lumenthi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: acauchy <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2017/11/13 11:41:08 by lumenthi          #+#    #+#             */
-/*   Updated: 2017/11/17 10:06:15 by lumenthi         ###   ########.fr       */
+/*   Created: 2017/11/13 14:20:39 by acauchy           #+#    #+#             */
+/*   Updated: 2017/11/22 10:09:44 by acauchy          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <stdlib.h>
+#include <string.h>
 #include "libft.h"
 
-char	*ft_strcat(char *dest, const char *src)
+char	*ft_strcat(char *s1, const char *s2)
 {
-	char	*d;
-	char	*s;
-	int		i;
-	int		n;
-
-	s = (char*)src;
-	d = dest;
-	i = ft_strlen(dest);
-	n = 0;
-	while (s[n])
-	{
-		d[i] = s[n];
-		i++;
-		n++;
-	}
-	d[i] = '\0';
-	return (dest);
+	if (!(ft_memcpy(s1 + ft_strlen(s1), s2, ft_strlen(s2) + 1)))
+		return (NULL);
+	return (s1);
 }
